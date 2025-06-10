@@ -1,4 +1,39 @@
-target/
+.idea
+target
+play
+build
+*.ipr
+*.iml
+*.*~
+
+.gradle
+/local.properties
+/.idea/workspace.xml
+/.idea/libraries
+.DS_Store
+/build
+/captures
+
+logs/*
+!.gitkeep
+
+target-grunt
+jslibs
+
+.classpath
+
+.mvn/
+.project
+.settings/
+mvnw.cmd
+mvnw
+.mvn
+nohup.out
+
+classes/*
+test.out
+archived
+
 pom.xml.tag
 pom.xml.releaseBackup
 pom.xml.versionsBackup
@@ -9,9 +44,4 @@ buildNumber.properties
 .mvn/timing.properties
 # https://github.com/takari/maven-wrapper#usage-without-binary-jar
 .mvn/wrapper/maven-wrapper.jar
-
-# Eclipse m2e generated files
-# Eclipse Core
-.project
-# JDT-specific (Eclipse Java Development Tools)
-.classpath
+application.properties
