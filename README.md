@@ -102,7 +102,6 @@ The application automatically creates the following tables via Hibernate:
    ```
 
 3. Access the application at `http://localhost:8080`
-4. Access API documentation at `http://localhost:8080/swagger-ui/index.html`
 
 ## Key Components
 
@@ -233,4 +232,3 @@ POST /user/{userId}/items/{itemId}/bids
 - `201 CREATED` - Bid placed successfully with bid details
 - `400 BAD REQUEST` - If bid amount is below minimum or auction is closed
 
-For complete API documentation with all possible response codes and schemas, access the Swagger UI at `http://localhost:8080/swagger-ui/index.html` when the application is running.
