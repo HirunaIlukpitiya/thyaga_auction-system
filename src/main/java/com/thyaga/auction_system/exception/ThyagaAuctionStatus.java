@@ -25,7 +25,8 @@ public enum ThyagaAuctionStatus {
     CANNOT_BID_ON_OWN_ITEM("TAE0009", "Cannot Bid on Own Item"),
     AUCTION_CLOSED("TAE0010", "Auction Closed"),
     BID_TOO_LOW("TAE0011", "Bid Too Low"),
-    CONCURRENT_BID_UPDATE("TAE0012", "Concurrent Bid Update Detected");
+    CONCURRENT_BID_UPDATE("TAE0012", "Concurrent Bid Update Detected"),
+    INVALID_CREDENTIALS("TAE0013", "Invalid Credentials");
 
     private final String statusCode;
     private final String statusDescription;
