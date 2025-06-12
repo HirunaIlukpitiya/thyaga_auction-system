@@ -1,6 +1,8 @@
 package com.thyaga.auction_system.service;
 
+import com.thyaga.auction_system.data.dto.BidResponseDTO;
 import com.thyaga.auction_system.data.dto.ItemDTO;
+import com.thyaga.auction_system.data.dto.ItemResponseDTO;
 import com.thyaga.auction_system.data.entity.Bid;
 import com.thyaga.auction_system.data.entity.Item;
 import com.thyaga.auction_system.data.entity.User;
@@ -48,7 +50,7 @@ public class ItemService {
         return itemRepository.save(item);
     }
 
-    public Page<Item> getItems(long userId, int page, int size, String sortBy, String sortDirection) {
+    public Page<ItemResponseDTO> getItems(long userId, int page, int size, String sortBy, String sortDirection) {
 
         LOGGER.info("Fetching all items for user with ID: {}", userId);
         Optional<User> user = userRepository.getUserById(userId);
@@ -66,10 +68,10 @@ public class ItemService {
             throw new ThyagaAuctionException(ThyagaAuctionStatus.ITEM_NOT_FOUND);
         }
 
-        return itemsPage;
+        return itemsPage.map(this::convertToItemResponseDTO);
     }
 
-    public Item getItem(long userId, long itemId) {
+    public ItemResponseDTO getItem(long userId, long itemId) {
         LOGGER.info("Fetching item with ID: {} for user with ID: {}", itemId, userId);
         Optional<User> user = userRepository.getUserById(userId);
 
@@ -90,6 +92,31 @@ public class ItemService {
             item.get().setBids(winnigBid);
         }
 
-        return item.get();
+        ItemResponseDTO itemResponseDTO = convertToItemResponseDTO(item.get());
+        LOGGER.info("Item with ID: {} fetched successfully", itemId);
+        return itemResponseDTO;
+    }
+
+    private ItemResponseDTO convertToItemResponseDTO(Item item) {
+        ItemResponseDTO dto = new ItemResponseDTO();
+        BeanUtils.copyProperties(item, dto);
+
+        ItemResponseDTO.UserDTO userDTO = new ItemResponseDTO.UserDTO();
+        BeanUtils.copyProperties(item.getSeller(), userDTO);
+        dto.setSeller(userDTO);
+
+
+        List<BidResponseDTO> bidDTOs = item.getBids().stream()
+                .map(bid -> {
+                    BidResponseDTO bidDTO = new BidResponseDTO();
+                    BeanUtils.copyProperties(bid, bidDTO);
+                    bidDTO.setUserId(bid.getUser().getId());
+                    bidDTO.setItemId(bid.getItem().getId());
+                    return bidDTO;
+                })
+                .toList();
+        dto.setBids(bidDTOs);
+
+        return dto;
     }
 }
