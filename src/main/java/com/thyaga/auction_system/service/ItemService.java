@@ -13,6 +13,10 @@ import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -44,7 +48,7 @@ public class ItemService {
         return itemRepository.save(item);
     }
 
-    public List<Item> getItems(long userId) {
+    public Page<Item> getItems(long userId, int page, int size, String sortBy, String sortDirection) {
 
         LOGGER.info("Fetching all items for user with ID: {}", userId);
         Optional<User> user = userRepository.getUserById(userId);
@@ -53,12 +57,16 @@ public class ItemService {
             throw new ThyagaAuctionException(ThyagaAuctionStatus.USER_NOT_FOUND);
         }
 
-        List<Item> items = itemRepository.findAllByAuctionStatus(AuctionStatus.ACTIVE);
-        if (items.isEmpty()) {
+        Sort sort = Sort.by(Sort.Direction.fromString(sortDirection), sortBy);
+
+        Pageable pageable = PageRequest.of(page, size, sort);
+
+        Page<Item> itemsPage = itemRepository.findAllByAuctionStatus(AuctionStatus.ACTIVE, pageable);
+        if (itemsPage.isEmpty()) {
             throw new ThyagaAuctionException(ThyagaAuctionStatus.ITEM_NOT_FOUND);
         }
 
-        return items;
+        return itemsPage;
     }
 
     public Item getItem(long userId, long itemId) {

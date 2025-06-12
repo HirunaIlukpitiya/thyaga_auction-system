@@ -1,5 +1,6 @@
 package com.thyaga.auction_system.service;
 
+import com.thyaga.auction_system.configuration.JwtTokenProvider;
 import com.thyaga.auction_system.data.dto.LoginRequestDTO;
 import com.thyaga.auction_system.data.dto.UserDTO;
 import com.thyaga.auction_system.data.entity.User;
@@ -9,8 +10,15 @@ import com.thyaga.auction_system.exception.ThyagaAuctionStatus;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.util.Optional;
 
@@ -19,9 +27,15 @@ public class UserService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(UserService.class);
     private final UserRepository userRepository;
+    private final AuthenticationManager authenticationManager;
+    private final JwtTokenProvider jwtTokenProvider;
 
-    public UserService(UserRepository userRepository) {
+    public UserService(UserRepository userRepository,
+                       AuthenticationManager authenticationManager,
+                       JwtTokenProvider jwtTokenProvider) {
         this.userRepository = userRepository;
+        this.authenticationManager = authenticationManager;
+        this.jwtTokenProvider = jwtTokenProvider;
     }
 
 
@@ -53,6 +67,26 @@ public class UserService {
     }
 
     public String loginUser(@Valid LoginRequestDTO loginRequestDTO) {
-        return "User logged in successfully with username or email: " + loginRequestDTO.getUsernameOrEmail();
+
+        try {
+
+            Authentication authentication = authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(
+                    loginRequestDTO.getUsernameOrEmail(),
+                    loginRequestDTO.getPassword()
+                )
+            );
+
+            SecurityContextHolder.getContext().setAuthentication(authentication);
+
+            String jwt = jwtTokenProvider.generateToken(authentication);
+
+            LOGGER.info("User logged in successfully with username: {}", loginRequestDTO.getUsernameOrEmail());
+            return jwt;
+
+        } catch (BadCredentialsException e) {
+            LOGGER.error("Invalid credentials for user: {}", loginRequestDTO.getUsernameOrEmail());
+            throw new ThyagaAuctionException(ThyagaAuctionStatus.INVALID_CREDENTIALS);
+        }
     }
 }
