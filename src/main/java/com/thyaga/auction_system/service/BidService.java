@@ -1,6 +1,7 @@
 package com.thyaga.auction_system.service;
 
 import com.thyaga.auction_system.data.dto.BidDTO;
+import com.thyaga.auction_system.data.dto.BidResponseDTO;
 import com.thyaga.auction_system.data.entity.Bid;
 import com.thyaga.auction_system.data.entity.Item;
 import com.thyaga.auction_system.data.entity.User;
@@ -38,7 +39,7 @@ public class BidService {
 
     @Retryable(retryFor = ObjectOptimisticLockingFailureException.class, maxAttempts = 3, backoff = @Backoff(delay = 100))
     @Transactional
-    public Bid placeBid(BidDTO bidDTO, Long userId, Long itemId) {
+    public BidResponseDTO placeBid(BidDTO bidDTO, Long userId, Long itemId) {
         LOGGER.info("Placing bid for user: {}, item: {}", userId, itemId);
 
         User user = userRepository.findById(userId).orElseThrow(() -> {
@@ -79,10 +80,13 @@ public class BidService {
             bid.setUser(user);
             bid.setItem(item);
 
-            Bid savedBid = bidRepository.save(bid);
-
-            LOGGER.info("Bid placed successfully with ID: {}", savedBid.getId());
-            return savedBid;
+            bid = bidRepository.save(bid);
+            BidResponseDTO bidResponse = new BidResponseDTO();
+            BeanUtils.copyProperties(bid, bidResponse);
+            bidResponse.setItemId(bid.getItem().getId());
+            bidResponse.setUserId(bid.getUser().getId());
+            LOGGER.info("Bid placed successfully with ID: {}", bid.getId());
+            return bidResponse;
         } catch (ObjectOptimisticLockingFailureException e) {
             LOGGER.error("Cannot place bid on item with ID: {}", itemId, e);
             throw new ThyagaAuctionException(ThyagaAuctionStatus.CONCURRENT_BID_UPDATE);

@@ -1,6 +1,7 @@
 package com.thyaga.auction_system.api;
 
 import com.thyaga.auction_system.data.dto.BidDTO;
+import com.thyaga.auction_system.data.dto.BidResponseDTO;
 import com.thyaga.auction_system.data.entity.Bid;
 import com.thyaga.auction_system.service.BidService;
 import org.springframework.http.HttpStatus;
@@ -18,9 +19,9 @@ public class BidAPI {
     }
 
     @PostMapping(value = "/user/{userId}/items/{itemId}/bids")
-    public ResponseEntity<Bid> placeBid(@PathVariable("userId") long userId,
-                                        @PathVariable("itemId") long itemId,
-                                        @RequestBody BidDTO bidDTO) {
+    public ResponseEntity<BidResponseDTO> placeBid(@PathVariable("userId") long userId,
+                                                   @PathVariable("itemId") long itemId,
+                                                   @RequestBody BidDTO bidDTO) {
 
         return new ResponseEntity<>(bidService.placeBid(bidDTO, userId, itemId), HttpStatus.CREATED);
     }
